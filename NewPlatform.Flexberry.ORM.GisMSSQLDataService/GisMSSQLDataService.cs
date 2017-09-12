@@ -58,8 +58,11 @@ namespace NewPlatform.Flexberry.ORM
                     reader.GetValues(tmp);
                     foreach (var c in sqlGeographyColumns)
                     {
-                        SqlGeography sqlGeo = (SqlGeography)tmp[c];
-                        tmp[c] = wktFormatter.Read<Geography>(new StringReader(sqlGeo.ToString()));
+                        if (!(tmp[c] is System.DBNull))
+                        {
+                            SqlGeography sqlGeo = (SqlGeography)tmp[c];
+                            tmp[c] = wktFormatter.Read<Geography>(new StringReader(sqlGeo.ToString()));
+                        }
                     }
 
                     arl.Add(tmp);
