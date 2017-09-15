@@ -1,19 +1,20 @@
-﻿using ICSSoft.STORMNET.Business;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.SqlServer.Types;
-using Microsoft.Spatial;
-using System.IO;
-using ICSSoft.STORMNET.FunctionalLanguage.SQLWhere;
-using ICSSoft.STORMNET.FunctionalLanguage;
-
-namespace NewPlatform.Flexberry.ORM
+﻿namespace NewPlatform.Flexberry.ORM
 {
+    using ICSSoft.STORMNET.Business;
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+    using Microsoft.SqlServer.Types;
+    using Microsoft.Spatial;
+    using System.IO;
+    using ICSSoft.STORMNET.Business.LINQProvider.Extensions;
+    using ICSSoft.STORMNET.FunctionalLanguage.SQLWhere;
+    using ICSSoft.STORMNET.FunctionalLanguage;
+    using ICSSoft.STORMNET.Windows.Forms;
     /// <summary>
     /// Сервис данных для работы с объектами ORM для Gis в Microsoft SQL Server.
     /// </summary>
@@ -61,7 +62,7 @@ namespace NewPlatform.Flexberry.ORM
                         if (!(tmp[c] is System.DBNull))
                         {
                             SqlGeography sqlGeo = (SqlGeography)tmp[c];
-                            tmp[c] = wktFormatter.Read<Geography>(new StringReader(sqlGeo.ToString()));
+                            tmp[c] = wktFormatter.Read<Geography>(new StringReader($"SRID={sqlGeo.STSrid};{sqlGeo.ToString()}"));
                         }
                     }
 
@@ -101,10 +102,7 @@ namespace NewPlatform.Flexberry.ORM
             if (value != null && value.GetType().IsSubclassOf(typeof(Geography)))
             {
                 Geography geo = value as Geography;
-                WellKnownTextSqlFormatter wktFormatter = WellKnownTextSqlFormatter.Create();
-                StringWriter wr=new StringWriter();
-                wktFormatter.Write(geo, wr);
-                return $"geography::Parse('{wr.ToString().Replace("SRID=4326;", "")}')";
+                return $"geography::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()})";
             }
             return base.ConvertSimpleValueToQueryValueString(value);
         }
@@ -112,7 +110,8 @@ namespace NewPlatform.Flexberry.ORM
         /// <summary>
         /// Преобразовать значение в SQL строку
         /// </summary>
-        /// <param name="function">Функция</param>
+        /// <param name="sqlLangDef">Определение языка ограничений</param>
+        /// <param name="value">Функция</param>
         /// <param name="convertValue">делегат для преобразования констант</param>
         /// <param name="convertIdentifier">делегат для преобразования идентификаторов</param>
         /// <returns></returns>
@@ -122,9 +121,39 @@ namespace NewPlatform.Flexberry.ORM
             delegateConvertValueToQueryValueString convertValue,
             delegatePutIdentifierToBrackets convertIdentifier)
         {
+            ExternalLangDef langDef = sqlLangDef as ExternalLangDef;
+            if (value.FunctionDef.StringedView == "GeoIntersects")
+            {
+                VariableDef varDef = null;
+                Geography geo = null;
+                if (value.Parameters[0] is VariableDef && value.Parameters[1] is Geography)
+                {
+                    varDef = value.Parameters[0] as VariableDef;
+                    geo = value.Parameters[1] as Geography;
+                }
+                else if (value.Parameters[1] is VariableDef && value.Parameters[0] is Geography)
+                {
+                    varDef = value.Parameters[1] as VariableDef;
+                    geo = value.Parameters[0] as Geography;
+                }
+                if (varDef != null && geo != null)
+                {
+                    return $"{varDef.StringedView}.STIntersects(geography::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()}))=1";
+                }
+                if (value.Parameters[0] is VariableDef && value.Parameters[1] is VariableDef)
+                {
+                    varDef = value.Parameters[0] as VariableDef;
+                    VariableDef varDef2 = value.Parameters[1] as VariableDef;
+                    return $"{varDef.StringedView}.STIntersects({varDef2.StringedView})=1";
+                }
+                geo = value.Parameters[0] as Geography;
+                var geo2 = value.Parameters[0] as Geography;
+                return $"geography::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()}).STIntersects(geography::STGeomFromText('{geo2.GetWKT()}', {geo2.GetSRID()}))=1";
+            }
+
+
             return base.FunctionToSql(sqlLangDef, value, convertValue, convertIdentifier);
         }
-
 
     }
 }
