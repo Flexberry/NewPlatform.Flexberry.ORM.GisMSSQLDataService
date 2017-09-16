@@ -19,7 +19,7 @@
     <tags>Flexberry ORM Gis GisMSSQLDataService</tags>
     <dependencies>
       <dependency id="Microsoft.Spatial" version="6.15.0" />
-      <dependency id="NewPlatform.Flexberry.ORM" version="4.0.0" />
+      <dependency id="NewPlatform.Flexberry.ORM" version="4.1.0-alpha04" />
       <dependency id="Microsoft.SqlServer.Types" version="10.50.1600.1" />
     </dependencies>
   </metadata>
