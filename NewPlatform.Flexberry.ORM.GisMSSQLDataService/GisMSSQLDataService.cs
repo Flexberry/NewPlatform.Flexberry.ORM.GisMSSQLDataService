@@ -104,7 +104,7 @@
                 Geography geo = value as Geography;
                 return $"geography::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()})";
             }
-            return base.ConvertSimpleValueToQueryValueString(value);
+            return base.ConvertValueToQueryValueString(value);
         }
 
         /// <summary>
