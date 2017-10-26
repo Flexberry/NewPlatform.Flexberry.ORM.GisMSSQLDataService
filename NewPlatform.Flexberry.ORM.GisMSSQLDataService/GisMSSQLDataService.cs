@@ -1,32 +1,58 @@
 ﻿namespace NewPlatform.Flexberry.ORM
 {
     using ICSSoft.STORMNET.Business;
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Data;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Microsoft.SqlServer.Types;
-    using Microsoft.Spatial;
-    using System.IO;
+    using ICSSoft.STORMNET.Business.Audit;
     using ICSSoft.STORMNET.Business.LINQProvider.Extensions;
     using ICSSoft.STORMNET.FunctionalLanguage.SQLWhere;
     using ICSSoft.STORMNET.FunctionalLanguage;
+    using ICSSoft.STORMNET.Security;
     using ICSSoft.STORMNET.Windows.Forms;
+
+    using Microsoft.Spatial;
+    using Microsoft.SqlServer.Types;
+
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.IO;
+
     /// <summary>
     /// Сервис данных для работы с объектами ORM для Gis в Microsoft SQL Server.
     /// </summary>
     public class GisMSSQLDataService: MSSQLDataService
     {
+        /// <summary>
+        /// Создание сервиса данных для MS SQL без параметров.
+        /// </summary>
+        public GisMSSQLDataService()
+        {
+        }
 
         /// <summary>
-        /// Вычитка следующей порции данных
+        /// Создание сервиса данных для MS SQL с указанием настроек проверки полномочий.
         /// </summary>
-        /// <param name="state"></param>
-        /// <param name="loadingBufferSize"></param>
-        /// <returns></returns>
+        /// <param name="securityManager">Менеджер полномочий.</param>
+        public GisMSSQLDataService(ISecurityManager securityManager)
+            : base(securityManager)
+        {
+        }
+
+        /// <summary>
+        /// Создание сервиса данных для MS SQL с указанием настроек проверки полномочий.
+        /// </summary>
+        /// <param name="securityManager">Менеджер полномочий.</param>
+        /// <param name="auditService">Сервис аудита.</param>
+        public GisMSSQLDataService(ISecurityManager securityManager, IAuditService auditService)
+            : base(securityManager, auditService)
+        {
+        }
+
+        /// <summary>
+        /// Осуществляет вычитку следующей порции данных.
+        /// </summary>
+        /// <param name="state">Состояние вычитки.</param>
+        /// <param name="loadingBufferSize">Размер буффера.</param>
+        /// <returns>Вычитанная порция данных.</returns>
         public override object[][] ReadNext(ref object state, int loadingBufferSize)
         {
             if (state == null || !state.GetType().IsArray)
@@ -93,10 +119,10 @@
 
 
         /// <summary>
-        /// конвертация значений в строки запроса
+        /// Осуществляет конвертацию заданного значения в строки запроса.
         /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
+        /// <param name="value">Значение для конвертации.</param>
+        /// <returns>Строка запроса.</returns>
         public override string ConvertValueToQueryValueString(object value)
         {
             if (value != null && value.GetType().IsSubclassOf(typeof(Geography)))
@@ -108,13 +134,13 @@
         }
 
         /// <summary>
-        /// Преобразовать значение в SQL строку
+        /// Осуществляет преобразование заданного значения в SQL-строку.
         /// </summary>
-        /// <param name="sqlLangDef">Определение языка ограничений</param>
-        /// <param name="value">Функция</param>
-        /// <param name="convertValue">делегат для преобразования констант</param>
-        /// <param name="convertIdentifier">делегат для преобразования идентификаторов</param>
-        /// <returns></returns>
+        /// <param name="sqlLangDef">Определение языка ограничений.</param>
+        /// <param name="value">Ограничивающая функция.</param>
+        /// <param name="convertValue">Делегат для преобразования констант.</param>
+        /// <param name="convertIdentifier">Делегат для преобразования идентификаторов.</param>
+        /// <returns>Результирующая SQL-строка.</returns>
         public override string FunctionToSql(
             SQLWhereLanguageDef sqlLangDef,
             Function value,
