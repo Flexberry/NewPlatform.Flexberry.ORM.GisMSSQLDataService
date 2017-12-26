@@ -7,14 +7,16 @@
     using ICSSoft.STORMNET.FunctionalLanguage;
     using ICSSoft.STORMNET.Security;
     using ICSSoft.STORMNET.Windows.Forms;
-
+    using STORMDO = ICSSoft.STORMNET;
     using Microsoft.Spatial;
-    using Microsoft.SqlServer.Types;
 
     using System.Collections;
     using System.Collections.Generic;
     using System.Data;
     using System.IO;
+    using System.Text;
+    using System.Linq;
+    using System;
 
     /// <summary>
     /// Сервис данных для работы с объектами ORM для Gis в Microsoft SQL Server.
@@ -48,75 +50,74 @@
         }
 
         /// <summary>
-        /// Осуществляет вычитку следующей порции данных.
+        /// Этот метод переопределён, чтобы подключить правильную подготовку гео-данных в запросе.
         /// </summary>
-        /// <param name="state">Состояние вычитки.</param>
-        /// <param name="loadingBufferSize">Размер буффера.</param>
-        /// <returns>Вычитанная порция данных.</returns>
-        public override object[][] ReadNext(ref object state, int loadingBufferSize)
+        /// <param name="customizationStruct">
+        /// The customization struct.
+        /// </param>
+        /// <param name="ForReadValues">
+        /// The for read values.
+        /// </param>
+        /// <param name="StorageStruct">
+        /// The storage struct.
+        /// </param>
+        /// <param name="Optimized">
+        /// The optimized.
+        /// </param>
+        /// <returns>
+        /// The <see cref="string"/>.
+        /// </returns>
+        public override string GenerateSQLSelect(
+            LoadingCustomizationStruct customizationStruct,
+            // ReSharper disable once InconsistentNaming
+            bool ForReadValues,
+            // ReSharper disable once InconsistentNaming
+            out StorageStructForView[] StorageStruct,
+            // ReSharper disable once InconsistentNaming
+            bool Optimized)
         {
-            if (state == null || !state.GetType().IsArray)
-                return null;
-            IDataReader reader = (IDataReader)((object[])state)[1];
-            if (reader.Read())
+            var sql = base.GenerateSQLSelect(customizationStruct, ForReadValues, out StorageStruct, Optimized);
+            var fromPos = sql.IndexOf("FROM (");
+            StringBuilder selectClause = new StringBuilder();
+            STORMDO.View dataObjectView = customizationStruct.View;
+            System.Type[] dataObjectType = customizationStruct.LoadingTypes;
+            int lastPos = 0;
+            for (int i = 0; i < dataObjectView.Properties.Length; i++)
             {
-                var arl = new ArrayList();
-                int i = 1;
-                int fieldCount = reader.FieldCount;
-                WellKnownTextSqlFormatter wktFormatter=null;
-                List<int> sqlGeographyColumns=new List<int>();
-                for (int c = 0; c < fieldCount; c++)
+                var prop = dataObjectView.Properties[i];
+                StorageStructForView.PropStorage propStorage = null;
+                foreach (var storage in StorageStruct)
                 {
-                    if(reader.GetFieldType(c)==typeof(SqlGeography))
-                        sqlGeographyColumns.Add(c);
+                    propStorage = storage.props.FirstOrDefault(p => p.Name == prop.Name);
+                    if (propStorage != null && propStorage.Name == prop.Name)
+                        break;
                 }
-                if(sqlGeographyColumns.Count>0)
-                    wktFormatter = WellKnownTextSqlFormatter.Create();
-
-                while (i <= loadingBufferSize || loadingBufferSize == 0)
+                if (propStorage == null || propStorage.propertyType != typeof(Geography))
+                    continue;
+                var propName = PutIdentifierIntoBrackets(prop.Name);
+                var scanText = $"{propName},";
+                int pos = sql.IndexOf(scanText, lastPos);
+                if (pos == -1)
                 {
-                    if (i > 1)
-                    {
-                        if (!reader.Read())
-                            break;
-                    }
-
-                    object[] tmp = new object[fieldCount];
-                    reader.GetValues(tmp);
-                    foreach (var c in sqlGeographyColumns)
-                    {
-                        if (!(tmp[c] is System.DBNull))
-                        {
-                            SqlGeography sqlGeo = (SqlGeography)tmp[c];
-                            tmp[c] = wktFormatter.Read<Geography>(new StringReader($"SRID={sqlGeo.STSrid};{sqlGeo.ToString()}"));
-                        }
-                    }
-
-                    arl.Add(tmp);
-                    i++;
+                    scanText = $"{propName}{Environment.NewLine}";
+                    pos = sql.IndexOf(scanText, lastPos);
                 }
-
-                object[][] result = (object[][])arl.ToArray(typeof(object[]));
-
-                if (i < loadingBufferSize || loadingBufferSize == 0)
+                if (pos == -1)
+                    throw new ArgumentException($"Unexpected property name {propName}. Mismatch customizationStruct.View and SELECT clause.");
+                if (pos > lastPos)
                 {
-                    reader.Close();
-                    IDbConnection connection = (IDbConnection)((object[])state)[0];
-                    connection.Close();
-                    state = null;
+                    selectClause.Append(sql.Substring(lastPos, pos - lastPos));
                 }
-                return result;
+                selectClause.Append(sql.Substring(pos, scanText.Length).Replace(propName, $"{propName}.ToString() as {propName}"));
+                lastPos = pos + scanText.Length;
             }
-            else
+            if (lastPos < fromPos)
             {
-                reader.Close();
-                IDbConnection connection = (IDbConnection)((object[])state)[0];
-                connection.Close();
-                state = null;
-                return null;
+                selectClause.Append(sql.Substring(lastPos, fromPos - lastPos));
             }
+            sql = $"{selectClause.ToString()}{sql.Substring(fromPos)}";
+            return sql;
         }
-
 
         /// <summary>
         /// Осуществляет конвертацию заданного значения в строки запроса.
