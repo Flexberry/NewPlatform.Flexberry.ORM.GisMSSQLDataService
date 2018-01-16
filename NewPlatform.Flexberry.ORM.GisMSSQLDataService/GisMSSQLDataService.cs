@@ -9,10 +9,13 @@
     using ICSSoft.STORMNET.Windows.Forms;
     using STORMDO = ICSSoft.STORMNET;
     using Microsoft.Spatial;
+    using Microsoft.SqlServer.Types;
+    using Mono.Math;
 
     using System.Collections;
     using System.Collections.Generic;
     using System.Data;
+    using System.Data.Spatial;
     using System.IO;
     using System.Text;
     using System.Linq;
@@ -129,7 +132,22 @@
             if (value != null && value.GetType().IsSubclassOf(typeof(Geography)))
             {
                 Geography geo = value as Geography;
-                return $"geography::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()})";
+                var geoWkt = geo.GetWKT();
+                
+                // If polygon's area is bigger than hemisphere 
+                // Polygon should be reoriented (swap diagonally positioned points)
+                SqlServerTypes.Utilities.LoadNativeAssemblies(AppDomain.CurrentDomain.BaseDirectory);
+                DbGeography polygon = DbGeography.FromText(geoWkt);
+                var earthArea = 510100000000000L;
+                if (polygon.Area.HasValue && polygon.Area.Value > (earthArea / 2))
+                {
+                    SqlGeography sqlPolygon = SqlGeography.STGeomFromText(new System.Data.SqlTypes.SqlChars(polygon.AsText()), Convert.ToInt32(geo.GetSRID()));
+                    sqlPolygon = sqlPolygon.ReorientObject();
+                    polygon = DbGeography.FromBinary(sqlPolygon.STAsBinary().Value);
+                    geoWkt = polygon.AsText();
+                }
+
+                return $"geography::STGeomFromText('{geoWkt}', {geo.GetSRID()})";
             }
             return base.ConvertValueToQueryValueString(value);
         }
