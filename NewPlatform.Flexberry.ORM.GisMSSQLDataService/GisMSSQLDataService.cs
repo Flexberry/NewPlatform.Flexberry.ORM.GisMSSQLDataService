@@ -129,7 +129,7 @@
             if (value != null && value.GetType().IsSubclassOf(typeof(Geography)))
             {
                 Geography geo = value as Geography;
-                return $"geography::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()})";
+                return $"geometry::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()})";
             }
             return base.ConvertValueToQueryValueString(value);
         }
@@ -165,7 +165,7 @@
                 }
                 if (varDef != null && geo != null)
                 {
-                    return $"{varDef.StringedView}.STIntersects(geography::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()}))=1";
+                    return $"{varDef.StringedView}.STIntersects(geometry::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()}))=1";
                 }
                 if (value.Parameters[0] is VariableDef && value.Parameters[1] is VariableDef)
                 {
@@ -175,7 +175,7 @@
                 }
                 geo = value.Parameters[0] as Geography;
                 var geo2 = value.Parameters[0] as Geography;
-                return $"geography::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()}).STIntersects(geography::STGeomFromText('{geo2.GetWKT()}', {geo2.GetSRID()}))=1";
+                return $"geometry::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()}).STIntersects(geometry::STGeomFromText('{geo2.GetWKT()}', {geo2.GetSRID()}))=1";
             }
 
 
