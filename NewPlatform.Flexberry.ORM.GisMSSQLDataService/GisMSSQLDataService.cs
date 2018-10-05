@@ -158,7 +158,6 @@
             {
                 VariableDef varDef = null;
                 Geography geo = null;
-                Geometry geom = null;
                 if (value.Parameters[0] is VariableDef && value.Parameters[1] is Geography)
                 {
                     varDef = value.Parameters[0] as VariableDef;
@@ -173,20 +172,33 @@
                 {
                     return $"{varDef.StringedView}.STIntersects(geography::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()}))=1";
                 }
-
+                if (value.Parameters[0] is VariableDef && value.Parameters[1] is VariableDef)
+                {
+                    varDef = value.Parameters[0] as VariableDef;
+                    VariableDef varDef2 = value.Parameters[1] as VariableDef;
+                    return $"{varDef.StringedView}.STIntersects({varDef2.StringedView})=1";
+                }
+                geo = value.Parameters[0] as Geography;
+                var geo2 = value.Parameters[0] as Geography;
+                return $"geography::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()}).STIntersects(geography::STGeomFromText('{geo2.GetWKT()}', {geo2.GetSRID()}))=1";
+            }
+            if (value.FunctionDef.StringedView == "GeomIntersects")
+            {
+                VariableDef varDef = null;
+                Geometry geo = null;
                 if (value.Parameters[0] is VariableDef && value.Parameters[1] is Geometry)
                 {
                     varDef = value.Parameters[0] as VariableDef;
-                    geom = value.Parameters[1] as Geometry;
+                    geo = value.Parameters[1] as Geometry;
                 }
                 else if (value.Parameters[1] is VariableDef && value.Parameters[0] is Geometry)
                 {
                     varDef = value.Parameters[1] as VariableDef;
-                    geom = value.Parameters[0] as Geometry;
+                    geo = value.Parameters[0] as Geometry;
                 }
-                if (varDef != null && geom != null)
+                if (varDef != null && geo != null)
                 {
-                    return $"{varDef.StringedView}.STIntersects(geometry::STGeomFromText('{geom.GetWKT()}', {geom.GetSRID()}))=1";
+                    return $"{varDef.StringedView}.STIntersects(geometry::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()}))=1";
                 }
                 if (value.Parameters[0] is VariableDef && value.Parameters[1] is VariableDef)
                 {
@@ -194,17 +206,10 @@
                     VariableDef varDef2 = value.Parameters[1] as VariableDef;
                     return $"{varDef.StringedView}.STIntersects({varDef2.StringedView})=1";
                 }
-                if (value.Parameters[0] is Geometry)
-                {
-                    geom = value.Parameters[0] as Geometry;
-                    var geom2 = value.Parameters[0] as Geometry;
-                    return $"geometry::STGeomFromText('{geom.GetWKT()}', {geom.GetSRID()}).STIntersects(geometry::STGeomFromText('{geom2.GetWKT()}', {geom2.GetSRID()}))=1";
-                }
-                geo = value.Parameters[0] as Geography;
-                var geo2 = value.Parameters[0] as Geography;
-                return $"geography::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()}).STIntersects(geography::STGeomFromText('{geo2.GetWKT()}', {geo2.GetSRID()}))=1";
+                geo = value.Parameters[0] as Geometry;
+                var geo2 = value.Parameters[0] as Geometry;
+                return $"geometry::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()}).STIntersects(geometry::STGeomFromText('{geo2.GetWKT()}', {geo2.GetSRID()}))=1";
             }
-
 
             return base.FunctionToSql(sqlLangDef, value, convertValue, convertIdentifier);
         }
