@@ -5,3 +5,4 @@
 .vs
 */*/FakesAssemblies/
 *.sln.DotSettings.user
+/NewPlatform.Flexberry.ORM.GisMSSQLDataService/NewPlatform.Flexberry.ORM.GisMSSQLDataService.xml
