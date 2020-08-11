@@ -7,11 +7,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		CHANGELOG.md = CHANGELOG.md
 		LICENSE.md = LICENSE.md
-		NewPlatform.Flexberry.ORM.GisMSSQLDataService.nuspec = NewPlatform.Flexberry.ORM.GisMSSQLDataService.nuspec
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewPlatform.Flexberry.ORM.GisMSSQLDataService", "NewPlatform.Flexberry.ORM.GisMSSQLDataService\NewPlatform.Flexberry.ORM.GisMSSQLDataService.csproj", "{DA294E45-5692-4930-8EEC-17D040706C02}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewPlatform.Flexberry.ORM.GisMSSQLDataService", "NewPlatform.Flexberry.ORM.GisMSSQLDataService\NewPlatform.Flexberry.ORM.GisMSSQLDataService.csproj", "{DA294E45-5692-4930-8EEC-17D040706C02}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -28,7 +27,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35
 		SolutionGuid = {3544934B-976F-4B6E-B274-3AE6039B6AC4}
+		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35
 	EndGlobalSection
 EndGlobal
