@@ -39,7 +39,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Spatial" Version="7.5.0" />
-    <PackageReference Include="NewPlatform.Flexberry.ORM.MSSQLDataService" Version="6.0.0-beta04" />
+    <PackageReference Include="NewPlatform.Flexberry.ORM.MSSQLDataService" Version="6.0.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
