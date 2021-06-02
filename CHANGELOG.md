@@ -9,8 +9,16 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-## [1.0.0] - 2021-06-02
+## [2.0.0] - 2021-06-02
+
 ### Added
+
+* .NET Standard implementation.
+
+## [1.0.0] - 2021-06-02
+
+### Added
+
 * <README.md>
 * <CHANGELOG.md>
 * <LICENSE.md>
