@@ -149,7 +149,20 @@
             delegatePutIdentifierToBrackets convertIdentifier)
         {
             ExternalLangDef langDef = sqlLangDef as ExternalLangDef;
-            if (value.FunctionDef.StringedView == "GeoIntersects")
+            string stFunction = null;
+            var sqlCondition = string.Empty;
+
+            if (value.FunctionDef.StringedView == "GeoDistance")
+            {
+                stFunction = "STDistance";
+            }
+            else if (value.FunctionDef.StringedView == "GeoIntersects")
+            {
+                stFunction = "STIntersects";
+                sqlCondition = "=1";
+            }
+
+            if (stFunction != null)
             {
                 VariableDef varDef = null;
                 Geography geo = null;
@@ -163,24 +176,25 @@
                     varDef = value.Parameters[1] as VariableDef;
                     geo = value.Parameters[0] as Geography;
                 }
+
                 if (varDef != null && geo != null)
                 {
-                    return $"{varDef.StringedView}.STIntersects(geography::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()}))=1";
+                    return $"{varDef.StringedView}.{stFunction}(geography::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()})){sqlCondition}";
                 }
+
                 if (value.Parameters[0] is VariableDef && value.Parameters[1] is VariableDef)
                 {
                     varDef = value.Parameters[0] as VariableDef;
                     VariableDef varDef2 = value.Parameters[1] as VariableDef;
-                    return $"{varDef.StringedView}.STIntersects({varDef2.StringedView})=1";
+                    return $"{varDef.StringedView}.{stFunction}({varDef2.StringedView}){sqlCondition}";
                 }
+
                 geo = value.Parameters[0] as Geography;
                 var geo2 = value.Parameters[0] as Geography;
-                return $"geography::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()}).STIntersects(geography::STGeomFromText('{geo2.GetWKT()}', {geo2.GetSRID()}))=1";
+                return $"geography::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()}).{stFunction}(geography::STGeomFromText('{geo2.GetWKT()}', {geo2.GetSRID()})){sqlCondition}";
             }
-
 
             return base.FunctionToSql(sqlLangDef, value, convertValue, convertIdentifier);
         }
-
     }
 }
