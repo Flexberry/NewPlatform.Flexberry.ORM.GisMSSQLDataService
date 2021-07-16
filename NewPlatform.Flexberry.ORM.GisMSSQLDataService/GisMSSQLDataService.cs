@@ -192,7 +192,7 @@
                 }
 
                 geo = value.Parameters[0] as Geography;
-                var geo2 = value.Parameters[0] as Geography;
+                var geo2 = value.Parameters[1] as Geography;
                 return $"geography::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()}).{stFunction}(geography::STGeomFromText('{geo2.GetWKT()}', {geo2.GetSRID()})){sqlCondition}";
             }
 
