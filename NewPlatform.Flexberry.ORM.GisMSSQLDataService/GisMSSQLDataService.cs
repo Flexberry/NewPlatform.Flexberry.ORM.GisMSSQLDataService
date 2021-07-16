@@ -189,14 +189,17 @@
 
                 if (varDef != null && geo != null)
                 {
-                    return $"{varDef.StringedView}.{sqlFunction}(geography::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()})){sqlCondition}";
+                    string sqlIdent = PutIdentifierIntoBrackets(varDef.StringedView);
+                    return $"{sqlIdent}.{sqlFunction}(geography::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()})){sqlCondition}";
                 }
 
                 if (value.Parameters[0] is VariableDef && value.Parameters[1] is VariableDef)
                 {
                     varDef = value.Parameters[0] as VariableDef;
                     VariableDef varDef2 = value.Parameters[1] as VariableDef;
-                    return $"{varDef.StringedView}.{sqlFunction}({varDef2.StringedView}){sqlCondition}";
+                    string sqlIdent = PutIdentifierIntoBrackets(varDef.StringedView);
+                    string sqlIdent2 = PutIdentifierIntoBrackets(varDef2.StringedView);
+                    return $"{sqlIdent}.{sqlFunction}({sqlIdent2}){sqlCondition}";
                 }
 
                 geo = value.Parameters[0] as Geography;
