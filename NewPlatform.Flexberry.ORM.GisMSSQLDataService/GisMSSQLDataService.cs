@@ -109,8 +109,10 @@
                     selectClause.Append(sql.Substring(lastPos, pos - lastPos));
                 }
 
-                // The SQL-expression returns WKT representation of a property value.
-                selectClause.Append(sql.Substring(pos, scanText.Length).Replace(propName, $"{propName}.ToString() as {propName}"));
+                // The SQL-expression returns EWKT representation of the property value.
+                selectClause.Append(sql
+                    .Substring(pos, scanText.Length)
+                    .Replace(propName, $"CONCAT('SRID=',{propName}.STSrid,';',REPLACE({propName}.ToString(),' (','(')) as {propName}"));
                 lastPos = pos + scanText.Length;
             }
             if (lastPos < fromPos)
