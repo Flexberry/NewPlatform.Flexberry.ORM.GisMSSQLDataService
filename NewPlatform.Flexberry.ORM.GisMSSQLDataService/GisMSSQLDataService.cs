@@ -108,6 +108,8 @@
                 {
                     selectClause.Append(sql.Substring(lastPos, pos - lastPos));
                 }
+
+                // The SQL-expression returns WKT representation of a property value.
                 selectClause.Append(sql.Substring(pos, scanText.Length).Replace(propName, $"{propName}.ToString() as {propName}"));
                 lastPos = pos + scanText.Length;
             }
@@ -120,7 +122,7 @@
         }
 
         /// <summary>
-        /// Осуществляет конвертацию заданного значения в строки запроса.
+        /// Осуществляет конвертацию заданного значения в строку запроса.
         /// </summary>
         /// <param name="value">Значение для конвертации.</param>
         /// <returns>Строка запроса.</returns>
