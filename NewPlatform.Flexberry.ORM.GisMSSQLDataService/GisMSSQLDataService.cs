@@ -150,24 +150,30 @@
             delegateConvertValueToQueryValueString convertValue,
             delegatePutIdentifierToBrackets convertIdentifier)
         {
+            const string GeoDistance = "GeoDistance";
+            const string GeoIntersects = "GeoIntersects";
+            const string SqlDistanceFunction = "STDistance";
+            const string SqlIntersectsFunction = "STIntersects";
+
             ExternalLangDef langDef = sqlLangDef as ExternalLangDef;
-            string stFunction = null;
+            var sqlFunction = string.Empty;
             var sqlCondition = string.Empty;
 
-            if (value.FunctionDef.StringedView == "GeoDistance")
+            if (value.FunctionDef.StringedView == GeoDistance)
             {
-                stFunction = "STDistance";
+                sqlFunction = SqlDistanceFunction;
             }
-            else if (value.FunctionDef.StringedView == "GeoIntersects")
+            else if (value.FunctionDef.StringedView == GeoIntersects)
             {
-                stFunction = "STIntersects";
+                sqlFunction = SqlIntersectsFunction;
                 sqlCondition = "=1";
             }
 
-            if (stFunction != null)
+            if (value.FunctionDef.StringedView == GeoDistance || value.FunctionDef.StringedView == GeoIntersects)
             {
                 VariableDef varDef = null;
                 Geography geo = null;
+
                 if (value.Parameters[0] is VariableDef && value.Parameters[1] is Geography)
                 {
                     varDef = value.Parameters[0] as VariableDef;
@@ -181,19 +187,19 @@
 
                 if (varDef != null && geo != null)
                 {
-                    return $"{varDef.StringedView}.{stFunction}(geography::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()})){sqlCondition}";
+                    return $"{varDef.StringedView}.{sqlFunction}(geography::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()})){sqlCondition}";
                 }
 
                 if (value.Parameters[0] is VariableDef && value.Parameters[1] is VariableDef)
                 {
                     varDef = value.Parameters[0] as VariableDef;
                     VariableDef varDef2 = value.Parameters[1] as VariableDef;
-                    return $"{varDef.StringedView}.{stFunction}({varDef2.StringedView}){sqlCondition}";
+                    return $"{varDef.StringedView}.{sqlFunction}({varDef2.StringedView}){sqlCondition}";
                 }
 
                 geo = value.Parameters[0] as Geography;
                 var geo2 = value.Parameters[1] as Geography;
-                return $"geography::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()}).{stFunction}(geography::STGeomFromText('{geo2.GetWKT()}', {geo2.GetSRID()})){sqlCondition}";
+                return $"geography::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()}).{sqlFunction}(geography::STGeomFromText('{geo2.GetWKT()}', {geo2.GetSRID()})){sqlCondition}";
             }
 
             return base.FunctionToSql(sqlLangDef, value, convertValue, convertIdentifier);
