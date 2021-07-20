@@ -190,7 +190,7 @@
                 if (varDef != null && geo != null)
                 {
                     string sqlIdent = PutIdentifierIntoBrackets(varDef.StringedView);
-                    return $"{sqlIdent}.{sqlFunction}(geography::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()})){sqlCondition}";
+                    return $"{sqlIdent}.{sqlFunction}({convertValue(geo)}){sqlCondition}";
                 }
 
                 if (value.Parameters[0] is VariableDef && value.Parameters[1] is VariableDef)
@@ -204,7 +204,7 @@
 
                 geo = value.Parameters[0] as Geography;
                 var geo2 = value.Parameters[1] as Geography;
-                return $"geography::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()}).{sqlFunction}(geography::STGeomFromText('{geo2.GetWKT()}', {geo2.GetSRID()})){sqlCondition}";
+                return $"{convertValue(geo)}.{sqlFunction}({convertValue(geo2)}){sqlCondition}";
             }
 
             return base.FunctionToSql(sqlLangDef, value, convertValue, convertIdentifier);
