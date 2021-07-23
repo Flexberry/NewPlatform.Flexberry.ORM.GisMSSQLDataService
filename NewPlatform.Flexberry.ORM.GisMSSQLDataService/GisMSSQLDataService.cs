@@ -157,6 +157,16 @@
             const string SqlDistanceFunction = "STDistance";
             const string SqlIntersectsFunction = "STIntersects";
 
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            if (convertValue == null)
+            {
+                throw new ArgumentNullException(nameof(convertValue));
+            }
+
             ExternalLangDef langDef = sqlLangDef as ExternalLangDef;
             var sqlFunction = string.Empty;
             var sqlCondition = string.Empty;
