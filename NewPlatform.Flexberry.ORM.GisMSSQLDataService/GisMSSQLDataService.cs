@@ -92,7 +92,7 @@
                     if (propStorage != null && propStorage.Name == prop.Name)
                         break;
                 }
-                if (propStorage == null || propStorage.propertyType != typeof(Geography))
+                if (propStorage == null || propStorage.propertyType != typeof(Geography) && propStorage.propertyType != typeof(Geometry))
                     continue;
                 var propName = PutIdentifierIntoBrackets(prop.Name);
                 var scanText = $"{propName},";
@@ -110,9 +110,15 @@
                 }
 
                 // The SQL-expression returns EWKT representation of the property value.
+                var propExprStrings = new string[]
+                    {
+                        $"CASE WHEN {propName} IS NULL THEN NULL ELSE",
+                        $"CONCAT('SRID=',{propName}.STSrid,';',REPLACE({propName}.ToString(),' (','('))",
+                        $"END as {propName}",
+                    };
                 selectClause.Append(sql
                     .Substring(pos, scanText.Length)
-                    .Replace(propName, $"CONCAT('SRID=',{propName}.STSrid,';',REPLACE({propName}.ToString(),' (','(')) as {propName}"));
+                    .Replace(propName, string.Join(" ", propExprStrings)));
                 lastPos = pos + scanText.Length;
             }
             if (lastPos < fromPos)
@@ -135,6 +141,13 @@
                 Geography geo = value as Geography;
                 return $"geography::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()})";
             }
+
+            if (value != null && value.GetType().IsSubclassOf(typeof(Geometry)))
+            {
+                Geometry geo = value as Geometry;
+                return $"geometry::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()})";
+            }
+
             return base.ConvertValueToQueryValueString(value);
         }
 
@@ -153,7 +166,9 @@
             delegatePutIdentifierToBrackets convertIdentifier)
         {
             const string GeoDistance = "GeoDistance";
+            const string GeomDistance = "GeomDistance";
             const string GeoIntersects = "GeoIntersects";
+            const string GeomIntersects = "GeomIntersects";
             const string SqlDistanceFunction = "STDistance";
             const string SqlIntersectsFunction = "STIntersects";
 
@@ -171,11 +186,11 @@
             var sqlFunction = string.Empty;
             var sqlCondition = string.Empty;
 
-            if (value.FunctionDef.StringedView == GeoDistance)
+            if (value.FunctionDef.StringedView == GeoDistance || value.FunctionDef.StringedView == GeomDistance)
             {
                 sqlFunction = SqlDistanceFunction;
             }
-            else if (value.FunctionDef.StringedView == GeoIntersects)
+            else if (value.FunctionDef.StringedView == GeoIntersects || value.FunctionDef.StringedView == GeomIntersects)
             {
                 sqlFunction = SqlIntersectsFunction;
                 sqlCondition = "=1";
@@ -214,6 +229,42 @@
 
                 geo = value.Parameters[0] as Geography;
                 var geo2 = value.Parameters[1] as Geography;
+                return $"{convertValue(geo)}.{sqlFunction}({convertValue(geo2)}){sqlCondition}";
+            }
+
+            if (value.FunctionDef.StringedView == GeomDistance || value.FunctionDef.StringedView == GeomIntersects)
+            {
+                VariableDef varDef = null;
+                Geometry geo = null;
+
+                if (value.Parameters[0] is VariableDef && value.Parameters[1] is Geometry)
+                {
+                    varDef = value.Parameters[0] as VariableDef;
+                    geo = value.Parameters[1] as Geometry;
+                }
+                else if (value.Parameters[1] is VariableDef && value.Parameters[0] is Geometry)
+                {
+                    varDef = value.Parameters[1] as VariableDef;
+                    geo = value.Parameters[0] as Geometry;
+                }
+
+                if (varDef != null && geo != null)
+                {
+                    string sqlIdent = PutIdentifierIntoBrackets(varDef.StringedView);
+                    return $"{sqlIdent}.{sqlFunction}({convertValue(geo)}){sqlCondition}";
+                }
+
+                if (value.Parameters[0] is VariableDef && value.Parameters[1] is VariableDef)
+                {
+                    varDef = value.Parameters[0] as VariableDef;
+                    VariableDef varDef2 = value.Parameters[1] as VariableDef;
+                    string sqlIdent = PutIdentifierIntoBrackets(varDef.StringedView);
+                    string sqlIdent2 = PutIdentifierIntoBrackets(varDef2.StringedView);
+                    return $"{sqlIdent}.{sqlFunction}({sqlIdent2}){sqlCondition}";
+                }
+
+                geo = value.Parameters[0] as Geometry;
+                var geo2 = value.Parameters[1] as Geometry;
                 return $"{convertValue(geo)}.{sqlFunction}({convertValue(geo2)}){sqlCondition}";
             }
 
