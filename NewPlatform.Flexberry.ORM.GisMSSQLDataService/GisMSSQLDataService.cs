@@ -134,16 +134,14 @@
         /// <returns>Строка запроса.</returns>
         public override string ConvertValueToQueryValueString(object value)
         {
-            if (value != null && value.GetType().IsSubclassOf(typeof(Geography)))
+            if (value is Geography geo)
             {
-                Geography geo = value as Geography;
                 return $"geography::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()})";
             }
 
-            if (value != null && value.GetType().IsSubclassOf(typeof(Geometry)))
+            if (value is Geometry geom)
             {
-                Geometry geo = value as Geometry;
-                return $"geometry::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()})";
+                return $"geometry::STGeomFromText('{geom.GetWKT()}', {geom.GetSRID()})";
             }
 
             return base.ConvertValueToQueryValueString(value);
