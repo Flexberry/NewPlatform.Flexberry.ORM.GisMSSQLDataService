@@ -196,10 +196,12 @@
             if (!string.IsNullOrEmpty(sqlFunction))
             {
                 var sqlParameters = new string[2];
-                sqlParameters[0] = value.Parameters[0] is VariableDef vd0 ?
-                    PutIdentifierIntoBrackets(vd0.StringedView) : convertValue(value.Parameters[0]);
-                sqlParameters[1] = value.Parameters[1] is VariableDef vd1 ?
-                    PutIdentifierIntoBrackets(vd1.StringedView) : convertValue(value.Parameters[1]);
+                sqlParameters[0] = value.Parameters[0] is VariableDef vd0
+                    ? PutIdentifierIntoBrackets(vd0.StringedView)
+                    : convertValue(value.Parameters[0]);
+                sqlParameters[1] = value.Parameters[1] is VariableDef vd1
+                    ? PutIdentifierIntoBrackets(vd1.StringedView)
+                    : convertValue(value.Parameters[1]);
 
                 return $"{sqlParameters[0]}.{sqlFunction}({sqlParameters[1]}){sqlCondition}";
             }
