@@ -19,7 +19,7 @@
     /// <summary>
     /// Сервис данных для работы с объектами ORM для Gis в Microsoft SQL Server.
     /// </summary>
-    public class GisMSSQLDataService: MSSQLDataService
+    public class GisMSSQLDataService : MSSQLDataService
     {
         /// <summary>
         /// Создание сервиса данных для MS SQL без параметров.
@@ -183,7 +183,6 @@
 
             var sqlFunction = string.Empty;
             var sqlCondition = string.Empty;
-
             if (value.FunctionDef.StringedView == langDef.funcGeoDistance || value.FunctionDef.StringedView == langDef.funcGeomDistance)
             {
                 sqlFunction = SqlDistanceFunction;
@@ -194,76 +193,15 @@
                 sqlCondition = "=1";
             }
 
-            if (value.FunctionDef.StringedView == langDef.funcGeoDistance || value.FunctionDef.StringedView == langDef.funcGeoIntersects)
+            if (!string.IsNullOrEmpty(sqlFunction))
             {
-                VariableDef varDef = null;
-                Geography geo = null;
+                var sqlParameters = new string[2];
+                sqlParameters[0] = value.Parameters[0] is VariableDef ?
+                    $"{PutIdentifierIntoBrackets((value.Parameters[0] as VariableDef).StringedView)}" : convertValue(value.Parameters[0]);
+                sqlParameters[1] = value.Parameters[1] is VariableDef ?
+                    $"{PutIdentifierIntoBrackets((value.Parameters[1] as VariableDef).StringedView)}" : convertValue(value.Parameters[1]);
 
-                if (value.Parameters[0] is VariableDef && value.Parameters[1] is Geography)
-                {
-                    varDef = value.Parameters[0] as VariableDef;
-                    geo = value.Parameters[1] as Geography;
-                }
-                else if (value.Parameters[1] is VariableDef && value.Parameters[0] is Geography)
-                {
-                    varDef = value.Parameters[1] as VariableDef;
-                    geo = value.Parameters[0] as Geography;
-                }
-
-                if (varDef != null && geo != null)
-                {
-                    string sqlIdent = PutIdentifierIntoBrackets(varDef.StringedView);
-                    return $"{sqlIdent}.{sqlFunction}({convertValue(geo)}){sqlCondition}";
-                }
-
-                if (value.Parameters[0] is VariableDef && value.Parameters[1] is VariableDef)
-                {
-                    varDef = value.Parameters[0] as VariableDef;
-                    VariableDef varDef2 = value.Parameters[1] as VariableDef;
-                    string sqlIdent = PutIdentifierIntoBrackets(varDef.StringedView);
-                    string sqlIdent2 = PutIdentifierIntoBrackets(varDef2.StringedView);
-                    return $"{sqlIdent}.{sqlFunction}({sqlIdent2}){sqlCondition}";
-                }
-
-                geo = value.Parameters[0] as Geography;
-                var geo2 = value.Parameters[1] as Geography;
-                return $"{convertValue(geo)}.{sqlFunction}({convertValue(geo2)}){sqlCondition}";
-            }
-
-            if (value.FunctionDef.StringedView == langDef.funcGeomDistance || value.FunctionDef.StringedView == langDef.funcGeomIntersects)
-            {
-                VariableDef varDef = null;
-                Geometry geo = null;
-
-                if (value.Parameters[0] is VariableDef && value.Parameters[1] is Geometry)
-                {
-                    varDef = value.Parameters[0] as VariableDef;
-                    geo = value.Parameters[1] as Geometry;
-                }
-                else if (value.Parameters[1] is VariableDef && value.Parameters[0] is Geometry)
-                {
-                    varDef = value.Parameters[1] as VariableDef;
-                    geo = value.Parameters[0] as Geometry;
-                }
-
-                if (varDef != null && geo != null)
-                {
-                    string sqlIdent = PutIdentifierIntoBrackets(varDef.StringedView);
-                    return $"{sqlIdent}.{sqlFunction}({convertValue(geo)}){sqlCondition}";
-                }
-
-                if (value.Parameters[0] is VariableDef && value.Parameters[1] is VariableDef)
-                {
-                    varDef = value.Parameters[0] as VariableDef;
-                    VariableDef varDef2 = value.Parameters[1] as VariableDef;
-                    string sqlIdent = PutIdentifierIntoBrackets(varDef.StringedView);
-                    string sqlIdent2 = PutIdentifierIntoBrackets(varDef2.StringedView);
-                    return $"{sqlIdent}.{sqlFunction}({sqlIdent2}){sqlCondition}";
-                }
-
-                geo = value.Parameters[0] as Geometry;
-                var geo2 = value.Parameters[1] as Geometry;
-                return $"{convertValue(geo)}.{sqlFunction}({convertValue(geo2)}){sqlCondition}";
+                return $"{sqlParameters[0]}.{sqlFunction}({sqlParameters[1]}){sqlCondition}";
             }
 
             return base.FunctionToSql(sqlLangDef, value, convertValue, convertIdentifier);
