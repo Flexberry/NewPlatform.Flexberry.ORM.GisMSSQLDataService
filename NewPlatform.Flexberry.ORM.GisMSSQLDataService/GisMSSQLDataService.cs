@@ -1,22 +1,20 @@
 ﻿namespace NewPlatform.Flexberry.ORM
 {
+    using System;
+    using System.Linq;
+    using System.Text;
+
     using ICSSoft.STORMNET.Business;
     using ICSSoft.STORMNET.Business.Audit;
     using ICSSoft.STORMNET.Business.LINQProvider.Extensions;
-    using ICSSoft.STORMNET.FunctionalLanguage.SQLWhere;
     using ICSSoft.STORMNET.FunctionalLanguage;
+    using ICSSoft.STORMNET.FunctionalLanguage.SQLWhere;
     using ICSSoft.STORMNET.Security;
     using ICSSoft.STORMNET.Windows.Forms;
-    using STORMDO = ICSSoft.STORMNET;
+
     using Microsoft.Spatial;
 
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Data;
-    using System.IO;
-    using System.Text;
-    using System.Linq;
-    using System;
+    using STORMDO = ICSSoft.STORMNET;
 
     /// <summary>
     /// Сервис данных для работы с объектами ORM для Gis в Microsoft SQL Server.
@@ -165,12 +163,13 @@
             delegateConvertValueToQueryValueString convertValue,
             delegatePutIdentifierToBrackets convertIdentifier)
         {
-            const string GeoDistance = "GeoDistance";
-            const string GeomDistance = "GeomDistance";
-            const string GeoIntersects = "GeoIntersects";
-            const string GeomIntersects = "GeomIntersects";
             const string SqlDistanceFunction = "STDistance";
             const string SqlIntersectsFunction = "STIntersects";
+
+            if (sqlLangDef == null)
+            {
+                throw new ArgumentNullException(nameof(sqlLangDef));
+            }
 
             if (value == null)
             {
@@ -183,20 +182,21 @@
             }
 
             ExternalLangDef langDef = sqlLangDef as ExternalLangDef;
+
             var sqlFunction = string.Empty;
             var sqlCondition = string.Empty;
 
-            if (value.FunctionDef.StringedView == GeoDistance || value.FunctionDef.StringedView == GeomDistance)
+            if (value.FunctionDef.StringedView == langDef.funcGeoDistance || value.FunctionDef.StringedView == langDef.funcGeomDistance)
             {
                 sqlFunction = SqlDistanceFunction;
             }
-            else if (value.FunctionDef.StringedView == GeoIntersects || value.FunctionDef.StringedView == GeomIntersects)
+            else if (value.FunctionDef.StringedView == langDef.funcGeoIntersects || value.FunctionDef.StringedView == langDef.funcGeomIntersects)
             {
                 sqlFunction = SqlIntersectsFunction;
                 sqlCondition = "=1";
             }
 
-            if (value.FunctionDef.StringedView == GeoDistance || value.FunctionDef.StringedView == GeoIntersects)
+            if (value.FunctionDef.StringedView == langDef.funcGeoDistance || value.FunctionDef.StringedView == langDef.funcGeoIntersects)
             {
                 VariableDef varDef = null;
                 Geography geo = null;
@@ -232,7 +232,7 @@
                 return $"{convertValue(geo)}.{sqlFunction}({convertValue(geo2)}){sqlCondition}";
             }
 
-            if (value.FunctionDef.StringedView == GeomDistance || value.FunctionDef.StringedView == GeomIntersects)
+            if (value.FunctionDef.StringedView == langDef.funcGeomDistance || value.FunctionDef.StringedView == langDef.funcGeomIntersects)
             {
                 VariableDef varDef = null;
                 Geometry geo = null;
