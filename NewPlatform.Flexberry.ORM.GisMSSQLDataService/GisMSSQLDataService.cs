@@ -1,27 +1,25 @@
 ﻿namespace NewPlatform.Flexberry.ORM
 {
+    using System;
+    using System.Linq;
+    using System.Text;
+
     using ICSSoft.STORMNET.Business;
     using ICSSoft.STORMNET.Business.Audit;
     using ICSSoft.STORMNET.Business.LINQProvider.Extensions;
-    using ICSSoft.STORMNET.FunctionalLanguage.SQLWhere;
     using ICSSoft.STORMNET.FunctionalLanguage;
+    using ICSSoft.STORMNET.FunctionalLanguage.SQLWhere;
     using ICSSoft.STORMNET.Security;
     using ICSSoft.STORMNET.Windows.Forms;
-    using STORMDO = ICSSoft.STORMNET;
+
     using Microsoft.Spatial;
 
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Data;
-    using System.IO;
-    using System.Text;
-    using System.Linq;
-    using System;
+    using STORMDO = ICSSoft.STORMNET;
 
     /// <summary>
     /// Сервис данных для работы с объектами ORM для Gis в Microsoft SQL Server.
     /// </summary>
-    public class GisMSSQLDataService: MSSQLDataService
+    public class GisMSSQLDataService : MSSQLDataService
     {
         /// <summary>
         /// Создание сервиса данных для MS SQL без параметров.
@@ -92,7 +90,7 @@
                     if (propStorage != null && propStorage.Name == prop.Name)
                         break;
                 }
-                if (propStorage == null || propStorage.propertyType != typeof(Geography))
+                if (propStorage == null || propStorage.propertyType != typeof(Geography) && propStorage.propertyType != typeof(Geometry))
                     continue;
                 var propName = PutIdentifierIntoBrackets(prop.Name);
                 var scanText = $"{propName},";
@@ -108,7 +106,17 @@
                 {
                     selectClause.Append(sql.Substring(lastPos, pos - lastPos));
                 }
-                selectClause.Append(sql.Substring(pos, scanText.Length).Replace(propName, $"{propName}.ToString() as {propName}"));
+
+                // The SQL-expression returns EWKT representation of the property value.
+                var propExprStrings = new string[]
+                    {
+                        $"CASE WHEN {propName} IS NULL THEN NULL ELSE",
+                        $"CONCAT('SRID=',{propName}.STSrid,';',REPLACE({propName}.ToString(),' (','('))",
+                        $"END as {propName}",
+                    };
+                selectClause.Append(sql
+                    .Substring(pos, scanText.Length)
+                    .Replace(propName, string.Join(" ", propExprStrings)));
                 lastPos = pos + scanText.Length;
             }
             if (lastPos < fromPos)
@@ -120,17 +128,22 @@
         }
 
         /// <summary>
-        /// Осуществляет конвертацию заданного значения в строки запроса.
+        /// Осуществляет конвертацию заданного значения в строку запроса.
         /// </summary>
         /// <param name="value">Значение для конвертации.</param>
         /// <returns>Строка запроса.</returns>
         public override string ConvertValueToQueryValueString(object value)
         {
-            if (value != null && value.GetType().IsSubclassOf(typeof(Geography)))
+            if (value is Geography geo)
             {
-                Geography geo = value as Geography;
                 return $"geography::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()})";
             }
+
+            if (value is Geometry geom)
+            {
+                return $"geometry::STGeomFromText('{geom.GetWKT()}', {geom.GetSRID()})";
+            }
+
             return base.ConvertValueToQueryValueString(value);
         }
 
@@ -148,50 +161,49 @@
             delegateConvertValueToQueryValueString convertValue,
             delegatePutIdentifierToBrackets convertIdentifier)
         {
-            ExternalLangDef langDef = sqlLangDef as ExternalLangDef;
-            string stFunction = null;
-            var sqlCondition = string.Empty;
+            const string SqlDistanceFunction = "STDistance";
+            const string SqlIntersectsFunction = "STIntersects";
 
-            if (value.FunctionDef.StringedView == "GeoDistance")
+            if (sqlLangDef == null)
             {
-                stFunction = "STDistance";
+                throw new ArgumentNullException(nameof(sqlLangDef));
             }
-            else if (value.FunctionDef.StringedView == "GeoIntersects")
+
+            if (value == null)
             {
-                stFunction = "STIntersects";
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            if (convertValue == null)
+            {
+                throw new ArgumentNullException(nameof(convertValue));
+            }
+
+            ExternalLangDef langDef = sqlLangDef as ExternalLangDef;
+
+            var sqlFunction = string.Empty;
+            var sqlCondition = string.Empty;
+            if (value.FunctionDef.StringedView == langDef.funcGeoDistance || value.FunctionDef.StringedView == langDef.funcGeomDistance)
+            {
+                sqlFunction = SqlDistanceFunction;
+            }
+            else if (value.FunctionDef.StringedView == langDef.funcGeoIntersects || value.FunctionDef.StringedView == langDef.funcGeomIntersects)
+            {
+                sqlFunction = SqlIntersectsFunction;
                 sqlCondition = "=1";
             }
 
-            if (stFunction != null)
+            if (!string.IsNullOrEmpty(sqlFunction))
             {
-                VariableDef varDef = null;
-                Geography geo = null;
-                if (value.Parameters[0] is VariableDef && value.Parameters[1] is Geography)
-                {
-                    varDef = value.Parameters[0] as VariableDef;
-                    geo = value.Parameters[1] as Geography;
-                }
-                else if (value.Parameters[1] is VariableDef && value.Parameters[0] is Geography)
-                {
-                    varDef = value.Parameters[1] as VariableDef;
-                    geo = value.Parameters[0] as Geography;
-                }
+                var sqlParameters = new string[2];
+                sqlParameters[0] = value.Parameters[0] is VariableDef vd0
+                    ? PutIdentifierIntoBrackets(vd0.StringedView)
+                    : convertValue(value.Parameters[0]);
+                sqlParameters[1] = value.Parameters[1] is VariableDef vd1
+                    ? PutIdentifierIntoBrackets(vd1.StringedView)
+                    : convertValue(value.Parameters[1]);
 
-                if (varDef != null && geo != null)
-                {
-                    return $"{varDef.StringedView}.{stFunction}(geography::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()})){sqlCondition}";
-                }
-
-                if (value.Parameters[0] is VariableDef && value.Parameters[1] is VariableDef)
-                {
-                    varDef = value.Parameters[0] as VariableDef;
-                    VariableDef varDef2 = value.Parameters[1] as VariableDef;
-                    return $"{varDef.StringedView}.{stFunction}({varDef2.StringedView}){sqlCondition}";
-                }
-
-                geo = value.Parameters[0] as Geography;
-                var geo2 = value.Parameters[0] as Geography;
-                return $"geography::STGeomFromText('{geo.GetWKT()}', {geo.GetSRID()}).{stFunction}(geography::STGeomFromText('{geo2.GetWKT()}', {geo2.GetSRID()})){sqlCondition}";
+                return $"{sqlParameters[0]}.{sqlFunction}({sqlParameters[1]}){sqlCondition}";
             }
 
             return base.FunctionToSql(sqlLangDef, value, convertValue, convertIdentifier);
