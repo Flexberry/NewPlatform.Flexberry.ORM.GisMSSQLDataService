@@ -7,8 +7,8 @@
     <Copyright>Copyright 2021 © New Platform Ltd.</Copyright>
     <Company>New Platform Ltd.</Company>
     <PackageTags>ORM.GisMSSQLDataService Flexberry</PackageTags>
-    <VersionPrefix>2.1.0</VersionPrefix>
-    <VersionSuffix>beta03</VersionSuffix>
+    <VersionPrefix>2.2.0</VersionPrefix>
+    <VersionSuffix>beta01</VersionSuffix>
     <Product>NewPlatform.Flexberry.ORM.GisMSSQLDataService</Product>
     <PackageId>NewPlatform.Flexberry.ORM.GisMSSQLDataService</PackageId>
     <PackageProjectUrl>https://flexberry.net</PackageProjectUrl>
@@ -39,9 +39,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Spatial" Version="7.7.2" />
-    <PackageReference Include="NewPlatform.Flexberry.ORM" Version="6.0.1-beta03" />
-    <PackageReference Include="NewPlatform.Flexberry.ORM.MSSQLDataService" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Spatial" Version="7.10.0" />
+    <PackageReference Include="NewPlatform.Flexberry.ORM" Version="7.2.0-alpha01" />
+    <PackageReference Include="NewPlatform.Flexberry.ORM.MSSQLDataService" Version="7.2.0-alpha01" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
