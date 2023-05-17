@@ -4,11 +4,11 @@
     <Description>Flexberry ORM.GisMSSQLDataService package.</Description>
     <Title>Flexberry ORM.GisMSSQLDataService</Title>
     <Authors>New Platform Ltd.</Authors>
-    <Copyright>Copyright 2021 © New Platform Ltd.</Copyright>
+    <Copyright>Copyright 2023 © New Platform Ltd.</Copyright>
     <Company>New Platform Ltd.</Company>
     <PackageTags>ORM.GisMSSQLDataService Flexberry</PackageTags>
     <VersionPrefix>2.1.0</VersionPrefix>
-    <VersionSuffix>beta03</VersionSuffix>
+    <VersionSuffix></VersionSuffix>
     <Product>NewPlatform.Flexberry.ORM.GisMSSQLDataService</Product>
     <PackageId>NewPlatform.Flexberry.ORM.GisMSSQLDataService</PackageId>
     <PackageProjectUrl>https://flexberry.net</PackageProjectUrl>
@@ -16,7 +16,18 @@
     <PackageLicenseUrl>https://flexberry.net</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>git://github.com/Flexberry/NewPlatform.Flexberry.ORM.GisMSSQLDataService</RepositoryUrl>
-    <PackageReleaseNotes>1. .NET Standard implementation.</PackageReleaseNotes>
+    <PackageReleaseNotes>
+    Added
+    - Feature GeoDistance is implemented.
+    - Add Geometry type support.
+
+    Fixed
+    - Fix geography-functions issues.
+
+    Changed
+    - Updated `NewPlatform.Flexberry.ORM` up to `6.1.0`.
+    - Updated `NewPlatform.Flexberry.ORM.MSSQLDataService` up to `6.1.0`.
+    </PackageReleaseNotes>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
@@ -40,8 +51,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Spatial" Version="7.7.2" />
-    <PackageReference Include="NewPlatform.Flexberry.ORM" Version="6.0.1-beta03" />
-    <PackageReference Include="NewPlatform.Flexberry.ORM.MSSQLDataService" Version="6.0.0" />
+    <PackageReference Include="NewPlatform.Flexberry.ORM" Version="6.1.0" />
+    <PackageReference Include="NewPlatform.Flexberry.ORM.MSSQLDataService" Version="6.1.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
