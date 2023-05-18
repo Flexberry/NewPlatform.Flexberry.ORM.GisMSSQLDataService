@@ -9,6 +9,18 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+## [2.1.0] - 2023-05-17
+### Added
+- Feature GeoDistance is implemented.
+- Add Geometry type support.
+
+### Fixed
+- Fix geography-functions issues.
+
+### Changed
+- Updated `NewPlatform.Flexberry.ORM` up to `6.1.0`.
+- Updated `NewPlatform.Flexberry.ORM.MSSQLDataService` up to `6.1.0`.
+
 ## [2.0.0] - 2021-06-02
 
 ### Added
