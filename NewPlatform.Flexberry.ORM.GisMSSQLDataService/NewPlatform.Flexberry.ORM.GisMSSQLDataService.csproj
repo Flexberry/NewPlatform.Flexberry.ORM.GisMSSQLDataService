@@ -8,7 +8,7 @@
     <Company>New Platform Ltd.</Company>
     <PackageTags>ORM.GisMSSQLDataService Flexberry</PackageTags>
     <VersionPrefix>2.2.0</VersionPrefix>
-    <VersionSuffix>alpha02</VersionSuffix>
+    <VersionSuffix>alpha01</VersionSuffix>
     <Product>NewPlatform.Flexberry.ORM.GisMSSQLDataService</Product>
     <PackageId>NewPlatform.Flexberry.ORM.GisMSSQLDataService</PackageId>
     <PackageProjectUrl>https://flexberry.net</PackageProjectUrl>
