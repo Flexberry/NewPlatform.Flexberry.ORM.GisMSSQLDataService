@@ -4,11 +4,11 @@
     <Description>Flexberry ORM.GisMSSQLDataService package.</Description>
     <Title>Flexberry ORM.GisMSSQLDataService</Title>
     <Authors>New Platform Ltd.</Authors>
-    <Copyright>Copyright 2021 © New Platform Ltd.</Copyright>
+    <Copyright>Copyright 2023 © New Platform Ltd.</Copyright>
     <Company>New Platform Ltd.</Company>
     <PackageTags>ORM.GisMSSQLDataService Flexberry</PackageTags>
     <VersionPrefix>2.2.0</VersionPrefix>
-    <VersionSuffix>beta01</VersionSuffix>
+    <VersionSuffix>alpha01</VersionSuffix>
     <Product>NewPlatform.Flexberry.ORM.GisMSSQLDataService</Product>
     <PackageId>NewPlatform.Flexberry.ORM.GisMSSQLDataService</PackageId>
     <PackageProjectUrl>https://flexberry.net</PackageProjectUrl>
@@ -16,7 +16,18 @@
     <PackageLicenseUrl>https://flexberry.net</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>git://github.com/Flexberry/NewPlatform.Flexberry.ORM.GisMSSQLDataService</RepositoryUrl>
-    <PackageReleaseNotes>1. .NET Standard implementation.</PackageReleaseNotes>
+    <PackageReleaseNotes>
+    Added
+    - Feature GeoDistance is implemented.
+    - Add Geometry type support.
+
+    Fixed
+    - Fix geography-functions issues.
+
+    Changed
+    - Updated `NewPlatform.Flexberry.ORM` up to `6.1.0`.
+    - Updated `NewPlatform.Flexberry.ORM.MSSQLDataService` up to `6.1.0`.
+    </PackageReleaseNotes>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
@@ -39,7 +50,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Spatial" Version="7.10.0" />
+<PackageReference Include="Microsoft.Spatial" Version="7.10.0" />
     <PackageReference Include="NewPlatform.Flexberry.ORM" Version="7.2.0-alpha01" />
     <PackageReference Include="NewPlatform.Flexberry.ORM.MSSQLDataService" Version="7.2.0-alpha01" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.0.0">
