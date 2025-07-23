@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v2
         
       - name: NuGet Restore
-        run: dotnet restore "NewPlatform.Flexberry.ORM.GisMSSQLDataService.sln" -NonInteractive
+        run: dotnet restore "NewPlatform.Flexberry.ORM.GisMSSQLDataService.sln"
                 
       - name: Compile code
         run:  dotnet build "NewPlatform.Flexberry.ORM.GisMSSQLDataService.sln" --no-restore --configuration Debug --verbosity quiet
