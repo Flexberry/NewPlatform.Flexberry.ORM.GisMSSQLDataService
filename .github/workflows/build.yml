@@ -28,5 +28,5 @@ jobs:
         run: dotnet restore "NewPlatform.Flexberry.ORM.GisMSSQLDataService.sln" -NonInteractive
                 
       - name: Compile code
-        run:  msbuild /verbosity:quiet /p:WarningLevel=0 /p:Configuration=Debug "NewPlatform.Flexberry.ORM.GisMSSQLDataService.sln" 
+        run:  dotnet build "NewPlatform.Flexberry.ORM.GisMSSQLDataService.sln" --no-restore --configuration Debug --verbosity quiet
 
