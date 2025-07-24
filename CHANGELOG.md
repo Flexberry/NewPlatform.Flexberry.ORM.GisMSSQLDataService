@@ -8,6 +8,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 ### Changed
+- Updated `Microsoft.Spatial` up to 7.10.0.
+- Updated `NewPlatform.Flexberry.ORM` up to 8.0.0-beta01.
+- Updated `NewPlatform.Flexberry.ORM.PostgresDataService` up to 8.0.0-beta01.
+- Changed constructor of `GisMSSQLDataService` for Dependency Injection support (added `IBusinessServerProvider`).
 
 ## [2.1.0] - 2023-05-17
 ### Added
@@ -20,6 +24,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Updated `NewPlatform.Flexberry.ORM` up to `6.1.0`.
 - Updated `NewPlatform.Flexberry.ORM.MSSQLDataService` up to `6.1.0`.
+
 
 ## [2.0.0] - 2021-06-02
 

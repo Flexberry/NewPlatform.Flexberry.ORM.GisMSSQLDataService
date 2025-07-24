@@ -6,6 +6,7 @@
 
     using ICSSoft.STORMNET.Business;
     using ICSSoft.STORMNET.Business.Audit;
+    using ICSSoft.STORMNET.Business.Interfaces;
     using ICSSoft.STORMNET.Business.LINQProvider.Extensions;
     using ICSSoft.STORMNET.FunctionalLanguage;
     using ICSSoft.STORMNET.FunctionalLanguage.SQLWhere;
@@ -22,28 +23,13 @@
     public class GisMSSQLDataService : MSSQLDataService
     {
         /// <summary>
-        /// Создание сервиса данных для MS SQL без параметров.
-        /// </summary>
-        public GisMSSQLDataService()
-        {
-        }
-
-        /// <summary>
-        /// Создание сервиса данных для MS SQL с указанием настроек проверки полномочий.
-        /// </summary>
-        /// <param name="securityManager">Менеджер полномочий.</param>
-        public GisMSSQLDataService(ISecurityManager securityManager)
-            : base(securityManager)
-        {
-        }
-
-        /// <summary>
         /// Создание сервиса данных для MS SQL с указанием настроек проверки полномочий.
         /// </summary>
         /// <param name="securityManager">Менеджер полномочий.</param>
         /// <param name="auditService">Сервис аудита.</param>
-        public GisMSSQLDataService(ISecurityManager securityManager, IAuditService auditService)
-            : base(securityManager, auditService)
+        /// <param name="businessServerProvider">The provider for <see cref="BusinessServer"/> creation.</param>
+        public GisMSSQLDataService(ISecurityManager securityManager, IAuditService auditService, IBusinessServerProvider businessServerProvider)
+            : base(securityManager, auditService, businessServerProvider)
         {
         }
 
